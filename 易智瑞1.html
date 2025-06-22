@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>行业产值趋势图</title>
+    <!-- 引入 ECharts 库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <style>
+        #chartContainer {
+            width: 100%;
+            height: 600px; /* 图表高度 */
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 图表容器 -->
+    <div id="chartContainer"></div>
+
+    <script>
+        // 原始数据（与之前提取的结构一致）
+        const industryData = {
+            "工业增加值": [
+                { year: 2019, value: 410 },
+                { year: 2023, value: 500 },
+                { year: 2024, value: 1400 }
+            ],
+            "战略性新兴产业（制造业部分）产值": [
+                { year: 2019, value: 1010 },
+                { year: 2023, value: 400 },
+                { year: 2024, value: 610 }
+            ],
+            "前十大行业产值": [
+                { year: 2019, value: 1200 },
+                { year: 2023, value: 1120 },
+                { year: 2024, value: 500 }
+            ],
+            "青浦工业园区产值": [
+                { year: 2019, value: 400 },
+                { year: 2023, value: 1340 },
+                { year: 2024, value: 1150 }
+            ]
+        };
+
+        // 初始化 ECharts 实例
+        const chart = echarts.init(document.getElementById('chartContainer'));
+
+        // 整理数据：提取所有年份（去重并排序）
+        const allYears = [...new Set(
+            Object.values(industryData).flatMap(series => series.map(item => item.year))
+        )].sort((a, b) => a - b);
+
+        // 整理每个系列对应年份的数据（按年份顺序填充值）
+        const seriesData = Object.entries(industryData).map(([name, items]) => {
+            // 按年份顺序生成值数组（例如：[2019,2023,2024] 对应 [410,500,1400]）
+            const values = allYears.map(year => 
+                items.find(item => item.year === year)?.value || null
+            );
+            return {
+                name: name,
+                type: 'line', // 折线图类型
+                data: values,
+                symbol: 'circle', // 标记点形状
+                symbolSize: 10, // 标记点大小
+                smooth: true // 曲线平滑
+            };
+        });
+
+        // 配置 ECharts 选项
+        const option = {
+            title: {
+                text: '行业产值趋势图（2019-2024）',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'axis', // 坐标轴触发提示
+                formatter: params => {
+                    let html = `<div>${params[0].name}年</div>`;
+                    params.forEach(p => {
+                        html += `<div>${p.seriesName}: ${p.value}（亿元）</div>`;
+                    });
+                    return html;
+                }
+            },
+            legend: {
+                top: '10%',
+                data: Object.keys(industryData)
+            },
+            xAxis: {
+                type: 'category',
+                data: allYears,
+                axisLabel: {
+                    formatter: '{value}年' // 年份显示为 "2019年"
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '产值（亿元）',
+                min: 0,
+                max: 1500, // 根据数据最大值调整
+                splitLine: {
+                    show: true,
+                    lineStyle: { type: 'dashed' } // 虚线网格
+                }
+            },
+            series: seriesData
+        };
+
+        // 渲染图表
+        chart.setOption(option);
+
+        // 窗口大小变化时自动调整图表
+        window.addEventListener('resize', () => chart.resize());
+        document.getElementById("container").innerHTML='<iframe src="https://www.geosceneonline.cn" width="100%" height="600ox"></iframe>'
+    </script>
+</body>
+</html>
+    
